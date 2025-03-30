@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' as html_parser;
-import 'package:shared_preferences/shared_preferences.dart';
+import '../local_storage.dart';
+import '../html_parser.dart' as custom_html_parser;
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -16,17 +17,22 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(),
+      home: const HomePage(),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
+  final custom_html_parser.HtmlParser htmlParser =
+      custom_html_parser.HtmlParser();
+  final LocalStorage localStorage = LocalStorage();
   String? htmlContent;
   bool isLoading = true;
 
@@ -37,7 +43,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> loadHtmlContent() async {
-    final storedHtml = await getHtmlFromLocalStorage();
+    final storedHtml = await localStorage.getHtml('cached_html');
     if (storedHtml != null) {
       setState(() {
         htmlContent = storedHtml;
@@ -53,9 +59,11 @@ class _HomePageState extends State<HomePage> {
       isLoading = true;
     });
     try {
-      final html = await fetchHtml('https://www.celiktafsir.net');
-      final parsedHtml = parseHtml(html);
-      await saveHtmlToLocalStorage(parsedHtml);
+      const proxyUrl = 'https://quiet-sun-5b87.afwanhaziq987.workers.dev/?url=';
+      const url = '${proxyUrl}https://celiktafsir.net';
+      final html = await htmlParser.fetchHtml(url);
+      final parsedHtml = htmlParser.parseHtml(html);
+      await localStorage.saveHtml('cached_html', parsedHtml);
       setState(() {
         htmlContent = parsedHtml;
         isLoading = false;
@@ -68,58 +76,33 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<String> fetchHtml(String url) async {
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      return response.body;
-    } else {
-      throw Exception('Failed to load HTML');
-    }
-  }
-
-  String parseHtml(String html) {
-    var document = html_parser.parse(html);
-    // Perform any parsing or modification you need here
-    return document.outerHtml;
-  }
-
-  Future<void> saveHtmlToLocalStorage(String html) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('cached_html', html);
-  }
-
-  Future<String?> getHtmlFromLocalStorage() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('cached_html');
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Celik Tafsir App'),
+        title: const Text('Celik Tafsir App'),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: fetchAndStoreHtml,
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : htmlContent != null
               ? SingleChildScrollView(
                   child: Html(
                     data: htmlContent,
-                    onLinkTap: (url, context, attributes, element) {
+                    onLinkTap: (url, _, __, ___) {
                       // Handle link tap
                     },
-                    onImageTap: (src, context, attributes, element) {
+                    onImageTap: (src, _, __, ___) {
                       // Handle image tap
                     },
                   ),
                 )
-              : Center(child: Text('Failed to load content')),
+              : const Center(child: Text('Failed to load content')),
     );
   }
 }

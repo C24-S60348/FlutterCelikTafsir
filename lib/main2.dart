@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'html_parser.dart';
-import 'local_storage.dart';
+import 'package:http/http.dart' as http;
+import 'package:html/parser.dart' as html_parser;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MyApp());
@@ -26,8 +27,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final HtmlParser htmlParser = HtmlParser();
-  final LocalStorage localStorage = LocalStorage();
   String? htmlContent;
   bool isLoading = true;
 
@@ -38,7 +37,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> loadHtmlContent() async {
-    final storedHtml = await localStorage.getHtml('cached_html');
+    final storedHtml = await getHtmlFromLocalStorage();
     if (storedHtml != null) {
       setState(() {
         htmlContent = storedHtml;
@@ -54,9 +53,11 @@ class _HomePageState extends State<HomePage> {
       isLoading = true;
     });
     try {
-      final html = await htmlParser.fetchHtml('https://www.celiktafsir.net');
-      final parsedHtml = htmlParser.parseHtml(html);
-      await localStorage.saveHtml('cached_html', parsedHtml);
+      const proxyUrl = 'https://quiet-sun-5b87.afwanhaziq987.workers.dev/?url=';
+      const url = '${proxyUrl}https://celiktafsir.net';
+      final html = await fetchHtml(url);
+      final parsedHtml = parseHtml(html);
+      await saveHtmlToLocalStorage(parsedHtml);
       setState(() {
         htmlContent = parsedHtml;
         isLoading = false;
@@ -67,6 +68,31 @@ class _HomePageState extends State<HomePage> {
       });
       // Handle error
     }
+  }
+
+  Future<String> fetchHtml(String url) async {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      throw Exception('Failed to load HTML');
+    }
+  }
+
+  String parseHtml(String html) {
+    var document = html_parser.parse(html);
+    // Perform any parsing or modification you need here
+    return document.outerHtml;
+  }
+
+  Future<void> saveHtmlToLocalStorage(String html) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('cached_html', html);
+  }
+
+  Future<String?> getHtmlFromLocalStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('cached_html');
   }
 
   @override
@@ -87,10 +113,10 @@ class _HomePageState extends State<HomePage> {
               ? SingleChildScrollView(
                   child: Html(
                     data: htmlContent,
-                    onLinkTap: (url, _, __, ___) {
+                    onLinkTap: (url, context, attributes, element) {
                       // Handle link tap
                     },
-                    onImageTap: (src, _, __, ___) {
+                    onImageTap: (src, context, attributes, element) {
                       // Handle image tap
                     },
                   ),
