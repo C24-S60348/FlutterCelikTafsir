@@ -1,10 +1,10 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:  # Manual trigger
   push:
     branches:
-      - build-apk  # Triggers on push to build-apk branch
+      - build-apk  # Push to this branch triggers the workflow
 
 jobs:
   build:
@@ -34,8 +34,11 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
+      - name: Grant Execute Permission to Gradle
+        run: chmod +x android/gradlew
+
       - name: Clean Gradle Cache
-        run: ./gradlew clean
+        run: cd android && ./gradlew clean
 
       - name: Build APK
         run: flutter build apk --release
