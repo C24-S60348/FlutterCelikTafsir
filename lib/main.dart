@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
               ? SingleChildScrollView(
                   child: Html(
                     data: htmlContent!,
-                    onLinkTap: (url, context, attributes, element) {
+                    onLinkTap: (url, attributes, element) {
                       if (url != null) launchUrl(Uri.parse(url));
                     },
                   ),
