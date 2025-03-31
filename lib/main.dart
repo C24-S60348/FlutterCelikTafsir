@@ -107,8 +107,11 @@ class _HomePageState extends State<HomePage> {
               ? SingleChildScrollView(
                   child: Html(
                     data: htmlContent!,
-                    onLinkTap: (url, context, attributes) { // Corrected onLinkTap signature
+                    onLinkTap: (url, context, attributes, element) {
                       if (url != null) launchUrl(Uri.parse(url));
+                    },
+                    onImageTap: (src, context, attributes, element) {
+                      // Handle image tap
                     },
                   ),
                 )
