@@ -110,9 +110,6 @@ class _HomePageState extends State<HomePage> {
                     onLinkTap: (url, context, attributes, element) {
                       if (url != null) launchUrl(Uri.parse(url));
                     },
-                    onImageTap: (src, context, attributes, element) {
-                      // Handle image tap
-                    },
                   ),
                 )
               : Center(child: Text('Failed to load content.')),
