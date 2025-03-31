@@ -1,6 +1,6 @@
 name: Build Android APK
 
-on: workflow_dispatch:  # Allows manual trigger push: branches: - build-apk  # Triggers on push to build-apk branch
+on: workflow_dispatch:
 
 jobs: build: runs-on: ubuntu-latest
 
