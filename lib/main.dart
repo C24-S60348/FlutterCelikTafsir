@@ -3,6 +3,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(MyApp());
@@ -116,9 +117,19 @@ class _HomePageState extends State<HomePage> {
                     onLinkTap: (url, context, attributes, element) {
                       // Handle link tap
                     },
-                    onImageTap: (src, context, attributes, element) {
-                      // Handle image tap
-                    },
+                    customRender: {
+  "img": (context, parsed, child) {
+    return GestureDetector(
+      onTap: () {
+        var src = parsed.attributes['src'];
+        if (src != null) {
+          launchUrl(Uri.parse(src));
+        }
+      },
+      child: child,
+    );
+  }
+},
                   ),
                 )
               : Center(child: Text('Failed to load content')),
