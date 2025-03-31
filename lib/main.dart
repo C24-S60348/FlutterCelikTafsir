@@ -82,17 +82,17 @@ class _HomePageState extends State<HomePage> {
 
   String parseHtml(String html) {
     var document = html_parser.parse(html);
-    return document.outerHtml;
+    return document.body!.innerHtml; // clean the html here.
   }
 
   Future<void> saveHtmlToLocalStorage(String html) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('cached_html', html);
+    await prefs.setString('htmlContent', html);
   }
 
   Future<String?> getHtmlFromLocalStorage() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('cached_html');
+    return prefs.getString('htmlContent');
   }
 
   @override
@@ -100,43 +100,19 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Celik Tafsir App'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: fetchAndStoreHtml,
-          ),
-        ],
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : htmlContent != null
               ? SingleChildScrollView(
                   child: Html(
-                    data: htmlContent,
-                    onLinkTap: (url, attributes, element) {
-                      if (url != null) {
-                        launchUrl(Uri.parse(url));
-                      }
+                    data: htmlContent!,
+                    onLinkTap: (url, _, __, ___) {
+                      if (url != null) launchUrl(Uri.parse(url));
                     },
-                    tagsList: Html.tags,
-                    extensions: [
-                      TagExtension(
-                        tagsToExtend: {"img"},
-                        builder: (extensionContext) {
-                          final src = extensionContext.attributes["src"];
-                          if (src != null) {
-                            return GestureDetector(
-                              onTap: () => launchUrl(Uri.parse(src)),
-                              child: Image.network(src),
-                            );
-                          }
-                          return SizedBox.shrink();
-                        },
-                      ),
-                    ],
                   ),
                 )
-              : Center(child: Text('Failed to load content')),
+              : Center(child: Text('Failed to load content.')),
     );
   }
 }
