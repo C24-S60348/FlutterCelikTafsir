@@ -25,8 +25,17 @@ jobs:
         with:
           flutter-version: '3.x'
 
+      - name: Clean Flutter Cache
+        run: flutter pub cache repair
+
+      - name: Upgrade Dependencies
+        run: flutter pub upgrade --major-versions
+
       - name: Get Dependencies
         run: flutter pub get
+
+      - name: Clean Gradle Cache
+        run: ./gradlew clean
 
       - name: Build APK
         run: flutter build apk --release
