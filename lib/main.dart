@@ -82,7 +82,6 @@ class _HomePageState extends State<HomePage> {
 
   String parseHtml(String html) {
     var document = html_parser.parse(html);
-    // Perform any parsing or modification you need here
     return document.outerHtml;
   }
 
@@ -114,22 +113,27 @@ class _HomePageState extends State<HomePage> {
               ? SingleChildScrollView(
                   child: Html(
                     data: htmlContent,
-                    onLinkTap: (url, context, attributes, element) {
-                      // Handle link tap
+                    onLinkTap: (url, attributes, element) {
+                      if (url != null) {
+                        launchUrl(Uri.parse(url));
+                      }
                     },
-                    customRender: {
-  "img": (context, parsed, child) {
-    return GestureDetector(
-      onTap: () {
-        var src = parsed.attributes['src'];
-        if (src != null) {
-          launchUrl(Uri.parse(src));
-        }
-      },
-      child: child,
-    );
-  }
-},
+                    tagsList: Html.tags,
+                    extensions: [
+                      TagExtension(
+                        tagsToExtend: {"img"},
+                        builder: (extensionContext) {
+                          final src = extensionContext.attributes["src"];
+                          if (src != null) {
+                            return GestureDetector(
+                              onTap: () => launchUrl(Uri.parse(src)),
+                              child: Image.network(src),
+                            );
+                          }
+                          return SizedBox.shrink();
+                        },
+                      ),
+                    ],
                   ),
                 )
               : Center(child: Text('Failed to load content')),
