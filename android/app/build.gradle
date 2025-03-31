@@ -17,16 +17,16 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName', '1.0
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'dev.flutter.flutter-gradle-plugin'
+    id 'dev.flutter.flutter-gradle-plugin' // Correct way to apply Flutter plugin
 }
 
 android {
-    compileSdkVersion 34  // Explicit SDK version
+    compileSdkVersion 34  // Ensure latest SDK compatibility
     ndkVersion flutter.ndkVersion
 
     defaultConfig {
-        applicationId "com.example.flutter_application_1" // Change this to your actual package name
-        minSdkVersion 21  // Ensure this is compatible with your app
+        applicationId "com.example.flutter_application_1"
+        minSdkVersion 21
         targetSdkVersion 34
         versionCode flutterVersionCode
         versionName flutterVersionName
@@ -57,5 +57,5 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"  // Use the latest kotlin-stdlib
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
