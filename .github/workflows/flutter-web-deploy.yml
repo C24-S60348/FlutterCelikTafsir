@@ -31,3 +31,4 @@ jobs:
           branch: gh-pages  # The branch GitHub Pages uses
           folder: build/web  # The output directory of Flutter Web
           clean: true  # Removes old files before deploying
+          token: ${{ secrets.ACTIONS_DEPLOY_KEY }}
