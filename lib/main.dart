@@ -3,26 +3,45 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(MyApp());
 }
 
+class WebViewPage extends StatelessWidget {
+  final String url;
+
+  const WebViewPage({super.key, required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('WebView')),
+      body: Center(
+        child: Text(
+          'WebView for URL: $url',
+        ), // Replace with actual WebView implementation
+      ),
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Celik Tafsir App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue),
       home: HomePage(),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -98,21 +117,27 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Celik Tafsir App'),
-      ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : htmlContent != null
+      appBar: AppBar(title: const Text('Celik Tafsir App')),
+      body:
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : htmlContent != null
               ? SingleChildScrollView(
-                  child: Html(
-                    data: htmlContent!,
-                    onLinkTap: (url, attributes, element) {
-                      if (url != null) launchUrl(Uri.parse(url));
-                    },
-                  ),
-                )
-              : Center(child: Text('Failed to load content.')),
+                child: Html(
+                  data: htmlContent!,
+                  onLinkTap: (url, attributes, element) {
+                    if (url != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WebViewPage(url: url),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              )
+              : const Center(child: Text('Failed to load content.')),
     );
   }
 }
